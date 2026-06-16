@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: Movie Booking API - Movies Section
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8500
+
+paths:
+
+  /movies/create:
+    post:
+      tags: [Movies]
+      summary: Create a new movie
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                moviename:
+                  type: string
+                genre:
+                  type: string
+                language:
+                  type: string
+                duration:
+                  type: string
+                cast:
+                  type: string
+                  example: '["Actor1","Actor2"]'
+                director:
+                  type: string
+                  example: '["Director Name"]'
+                releaseDate:
+                  type: string
+                description:
+                  type: string
+                rating:
+                  type: number
+                votes:
+                  type: number
+                likes:
+                  type: number
+                promoted:
+                  type: boolean
+                poster:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Movie created successfully
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized (Missing token or role)
+
+  /movies/get/all-movies:
+    get:
+      tags: [Movies]
+      summary: Fetch all movies
+      responses:
+        200:
+          description: All movies returned
+        404:
+          description: No movies found
+
+  /movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Get movie by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Movie found
+        400:
+          description: Invalid Movie ID
+        404:
+          description: Movie not found
+
+    put:
+      tags: [Movies]
+      summary: Update movie details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieUpdateDto"
+      responses:
+        200:
+          description: Movie updated successfully
+        401:
+          description: Unauthorized
+
+    delete:
+      tags: [Movies]
+      summary: Delete movie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Movie deleted successfully
+        401:
+          description: Unauthorized
+
+  /movies/movie/{id}/promote:
+    patch:
+      tags: [Movies]
+      summary: Promote / Unpromote a movie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                promoted:
+                  type: boolean
+      responses:
+        200:
+          description: Promotion updated
+        400:
+          description: Invalid data
+        401:
+          description: Unauthorized
+
+  /movies/movie/{id}/simulate:
+    post:
+      tags: [Movies]
+      summary: Predict future movie rating
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                futureVotes:
+                  type: number
+                userRating:
+                  type: number
+      responses:
+        200:
+          description: Prediction done
+        400:
+          description: Bad data
+
+  /movies/movie/{id}/react:
+    patch:
+      tags: [Movies]
+      summary: Like or rate a movie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                likes:
+                  type: number
+                rating:
+                  type: number
+      responses:
+        200:
+          description: Reaction updated
+        400:
+          description: Invalid payload
+
+components:
+  schemas:
+
+    MovieUpdateDto:
+      type: object
+      properties:
+        moviename: { type: string }
+        genre: { type: string }
+        language: { type: string }
+        duration: { type: string }
+        cast:
+          type: array
+          items: { type: string }
+        director:
+          type: array
+          items: { type: string }
+        releaseDate: { type: string }
+        description: { type: string }
+        rating: { type: number }
+        likes: { type: number }
+        promoted: { type: boolean }
+
+    Movie:
+      type: object
+      properties:
+        _id: { type: string }
+        moviename: { type: string }
+        genre: { type: string }
+        language: { type: string }
+        duration: { type: string }
+        cast:
+          type: array
+          items: { type: string }
+        director:
+          type: array
+          items: { type: string }
+        releaseDate: { type: string }
+        description: { type: string }
+        poster: { type: string }
+        rating: { type: number }
+        votes: { type: number }
+        likes: { type: number }
+        promoted: { type: boolean }
+        createdAt: { type: string }
+        updatedAt: { type: string }

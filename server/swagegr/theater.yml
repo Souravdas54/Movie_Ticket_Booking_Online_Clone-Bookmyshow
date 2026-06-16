@@ -1,0 +1,158 @@
+openapi: 3.0.0
+info:
+  title: Theater API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8500
+
+paths:
+
+  /theaters/theather/create:
+    post:
+      tags: [Theaters]
+      summary: Create a new theater
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TheaterCreate"
+      responses:
+        201:
+          description: Theater created successfully
+        401:
+          description: Unauthorized
+
+  /theaters/movie/{movieId}:
+    get:
+      tags: [Theaters]
+      summary: Get theaters by movie
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: movieId
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: List of theaters
+        404:
+          description: No theaters found
+
+  /theaters/search/theaters-by-state:
+    get:
+      tags: [Theaters]
+      summary: Get theaters by state
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: state
+          required: true
+          schema: { type: string }
+        - in: query
+          name: movieId
+          required: false
+          schema: { type: string }
+      responses:
+        200:
+          description: Theaters returned
+        404:
+          description: No theaters found
+
+  /theaters/search/theaters-by-district:
+    get:
+      tags: [Theaters]
+      summary: Get theaters by district
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: district
+          required: true
+          schema: { type: string }
+        - in: query
+          name: movieId
+          required: false
+          schema: { type: string }
+      responses:
+        200:
+          description: Theaters returned
+        404:
+          description: No theaters found
+
+  /theaters/update/{id}:
+    put:
+      tags: [Theaters]
+      summary: Update theater
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TheaterUpdate"
+      responses:
+        200:
+          description: Theater updated
+        404:
+          description: Theater not found
+
+  /theaters/delete/{id}:
+    delete:
+      tags: [Theaters]
+      summary: Delete theater
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Theater deleted
+        404:
+          description: Theater not found
+
+components:
+  schemas:
+    TheaterCreate:
+      type: object
+      required:
+        - theatername
+        - screens
+        - contact
+        - district
+        - state
+      properties:
+        theatername: { type: string }
+        screens: { type: number }
+        contact: { type: string }
+        assignedMovies:
+          type: array
+          items: { type: string }
+        district: { type: string }
+        state: { type: string }
+
+    TheaterUpdate:
+      type: object
+      properties:
+        theatername: { type: string }
+        screens: { type: number }
+        contact: { type: string }
+        assignedMovies:
+          type: array
+          items: { type: string }
+        district: { type: string }
+        state: { type: string }

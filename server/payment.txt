@@ -1,0 +1,28 @@
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Webhook URL (for Stripe dashboard)
+# Set in Stripe Dashboard: https://dashboard.stripe.com/webhooks
+# Webhook URL should be: http://localhost:8500/api/payment/webhook
+=========================================================================================
+Removed/Simplified Code:
+You can remove these if not needed:
+
+cancelPayment method - If you don't need manual payment cancellation
+
+getUserPayments method - If you don't need user payment history
+
+getPaymentByIntentId - Keep only if needed for frontend status checks
+
+getPaymentsByUser - Remove if not showing payment history
+=========================================================================================
+ Essential Routes for Payment Flow:
+POST /api/payment/create-intent - Create payment intent
+
+POST /api/payment/confirm - Confirm payment after success
+
+POST /api/payment/webhook - Stripe webhook (no auth)
+
+GET /api/payment/status/:paymentIntentId - Check payment status
