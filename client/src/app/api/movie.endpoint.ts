@@ -83,7 +83,8 @@ export const movieEndpoints = {
             const response = await axiosInstance.patch(`${API_URL}/movie/${movieId}/react`, data);
             return response.data;
         } catch (error: unknown) {
-
+            const message = error instanceof Error ? error.message : 'Failed to react to movie';
+            throw new Error(message);
         }
     },
 
@@ -94,7 +95,8 @@ export const movieEndpoints = {
             return response.data;
 
         } catch (error: unknown) {
-
+            const message = error instanceof Error ? error.message : 'Failed to simulate rating';
+            throw new Error(message);
         }
     },
 
