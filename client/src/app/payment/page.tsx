@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Box, Container, Paper, Typography, Button, Stepper, Step, StepLabel,
@@ -131,7 +131,7 @@ function CheckoutForm({ clientSecret, bookingId, totalAmount, onPaymentSuccess }
 }
 
 // Main Payment Page
-export default function PaymentPage() {
+function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -226,7 +226,7 @@ export default function PaymentPage() {
     };
 
     checkStatus();
-  }, [bookingId, userId,router]);
+  }, [bookingId, userId, router]);
 
   // Create payment intent after booking is checked
   useEffect(() => {
@@ -544,4 +544,17 @@ export default function PaymentPage() {
       </Container>
     </Box>
   );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+        <CircularProgress />
+        <Typography sx={{ mt: 2 }}>Loading payment details...</Typography>
+      </Container>
+    }>
+      <PaymentContent />
+    </Suspense>
+  )
 }

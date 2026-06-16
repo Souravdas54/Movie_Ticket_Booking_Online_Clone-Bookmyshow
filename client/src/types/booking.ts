@@ -51,7 +51,7 @@ export interface Booking {
   status: "Confirmed" | "Cancelled" | "Pending";
   paymentStatus: "Paid" | "Unpaid";
   bookedAt: string;
-  booking:string; // add new 
+  bookingId:string; // add new 
   createdAt: string;
   updatedAt: string;
 }

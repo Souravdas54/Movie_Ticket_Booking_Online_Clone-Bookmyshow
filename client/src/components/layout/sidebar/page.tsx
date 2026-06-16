@@ -22,6 +22,7 @@ import {
   Alert,
   Menu,
   MenuItem,
+  ListItemButton,
 } from "@mui/material";
 import {
   Close,
@@ -46,7 +47,7 @@ interface UserType {
 
 interface Chat {
   _id: string;
-  participants: string[];
+  participants: (UserType | string)[]; // Change this part 
   messages: IMessage[];
   lastMessage?: IMessage;
   createdAt: string;
@@ -124,7 +125,7 @@ export default function Sidebar({
 
   const [attachmentMenuAnchor, setAttachmentMenuAnchor] = useState<null | HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -193,16 +194,16 @@ export default function Sidebar({
       // });
 
       const newSocket = io(SOCKET_URL, {
-            withCredentials: true,
-            reconnection: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            timeout: 30000,
-            transports: ['websocket', 'polling'],
-            autoConnect: true,
-            forceNew: false
-        });
+        withCredentials: true,
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 30000,
+        transports: ['websocket', 'polling'],
+        autoConnect: true,
+        forceNew: false
+      });
 
       setSocket(newSocket);
 
@@ -496,7 +497,7 @@ export default function Sidebar({
 
     // Optimistically add message to UI
     // const tempId = `temp-${Date.now()}`;
-      const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const tempMessage: IMessage = {
       _id: tempId,
       senderId: user._id,
@@ -664,16 +665,16 @@ export default function Sidebar({
 
       const data = await response.json();
 
-if(data.success && data.message){
-  const sortedMessages = [...data.messages].sort(
-        (a: IMessage, b: IMessage) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-      setMessages(sortedMessages);  // final clean update
+      if (data.success && data.message) {
+        const sortedMessages = [...data.messages].sort(
+          (a: IMessage, b: IMessage) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        setMessages(sortedMessages);  // final clean update
 
-      console.log(`Loaded ${sortedMessages.length} messages`)
+        console.log(`Loaded ${sortedMessages.length} messages`)
 
-}
+      }
       // SORT BY CREATED DATE ALWAYS
       // const sorted = [...data.messages].sort(
       //   (a: IMessage, b: IMessage) =>
@@ -876,8 +877,8 @@ if(data.success && data.message){
 
               {/* Chat Support Button */}
               <Box sx={{ p: 2 }}>
-                <ListItem
-                  button
+                <ListItemButton
+
                   onClick={handleChatClick}
                   disabled={loading}
                   sx={{
@@ -919,7 +920,7 @@ if(data.success && data.message){
                       }}
                     />
                   )}
-                </ListItem>
+                </ListItemButton>
               </Box>
             </>
           ) : (

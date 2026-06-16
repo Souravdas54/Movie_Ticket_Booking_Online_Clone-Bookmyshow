@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import {
     Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, Avatar, Menu, MenuItem,
     IconButton, Container, Card, CardContent, Grid, TextField, Button, Chip, Divider, Paper, Dialog, DialogTitle,
-    DialogContent, DialogActions, Badge, useTheme, useMediaQuery, Fab
+    DialogContent, DialogActions, Badge, useTheme, useMediaQuery, Fab,
+    ListItemButton
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -20,13 +21,30 @@ import {
     Theaters as MovieIcon
 } from '@mui/icons-material';
 
+interface ProfilePageProps {
+    profileData: {
+        name: string;
+        email: string;
+        phone: string;
+        address: string;
+    };
+    editMode: boolean;
+    setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
+    setProfileData: React.Dispatch<React.SetStateAction<{
+        name: string;
+        email: string;
+        phone: string;
+        address: string;
+    }>>;
+}
+
 // Main Dashboard Component
 const BookMyCinemaDashboard = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [mobileOpen, setMobileOpen] = useState(false);
     const [activePage, setActivePage] = useState('home');
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [profileData, setProfileData] = useState({
         name: 'John Doe',
@@ -39,7 +57,8 @@ const BookMyCinemaDashboard = () => {
         setMobileOpen(!mobileOpen);
     };
 
-    const handleMenuOpen = (event) => {
+    // ✅ Add MouseEvent type
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -67,18 +86,20 @@ const BookMyCinemaDashboard = () => {
                     { text: 'Your Order', icon: <OrderIcon />, key: 'orders' },
                     { text: 'Help Center', icon: <HelpIcon />, key: 'help' }
                 ].map((item) => (
-                    <ListItem
-                        button
+                    <ListItemButton
+                        // component="div"
+                        // button
                         key={item.key}
                         selected={activePage === item.key}
                         onClick={() => {
                             setActivePage(item.key);
                             if (isMobile) setMobileOpen(false);
                         }}
+                        sx={{ cursor: 'pointer' }}
                     >
                         <ListItemIcon>{item.icon}</ListItemIcon>
                         <ListItemText primary={item.text} />
-                    </ListItem>
+                    </ListItemButton>
                 ))}
             </List>
         </Box>
@@ -193,8 +214,16 @@ const HomePage = () => {
                 Your one-stop destination for movie bookings and entertainment.
             </Typography>
 
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-                <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 3,
+                mt: 2
+            }}>
+                <Box sx={{
+                    flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' },
+                    minWidth: { xs: '100%', sm: '200px' }
+                }}>
                     <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                             <MovieIcon color="primary" sx={{ fontSize: 48 }} />
@@ -206,9 +235,12 @@ const HomePage = () => {
                             </Typography>
                         </CardContent>
                     </Card>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{
+                    flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' },
+                    minWidth: { xs: '100%', sm: '200px' }
+                }}>
                     <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                             <OrderIcon color="secondary" sx={{ fontSize: 48 }} />
@@ -220,9 +252,12 @@ const HomePage = () => {
                             </Typography>
                         </CardContent>
                     </Card>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{
+                    flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' },
+                    minWidth: { xs: '100%', sm: '200px' }
+                }}>
                     <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                             <SuccessIcon color="success" sx={{ fontSize: 48 }} />
@@ -234,9 +269,12 @@ const HomePage = () => {
                             </Typography>
                         </CardContent>
                     </Card>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{
+                    flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' },
+                    minWidth: { xs: '100%', sm: '200px' }
+                }}>
                     <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                             <HelpIcon color="action" sx={{ fontSize: 48 }} />
@@ -248,14 +286,14 @@ const HomePage = () => {
                             </Typography>
                         </CardContent>
                     </Card>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
         </Container>
     );
 };
 
 // Profile Page Component
-const ProfilePage = ({ profileData, editMode, setEditMode, setProfileData }) => {
+const ProfilePage = ({ profileData, editMode, setEditMode, setProfileData }: ProfilePageProps) => {
     const [tempData, setTempData] = useState(profileData);
     const [imageDialog, setImageDialog] = useState(false);
 
@@ -310,36 +348,44 @@ const ProfilePage = ({ profileData, editMode, setEditMode, setProfileData }) => 
 
                     {!editMode ? (
                         // View Mode
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 3
+                        }}>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <Typography variant="subtitle2" color="text.secondary">Full Name</Typography>
                                 <Typography variant="body1" gutterBottom>{profileData.name}</Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Box>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <Typography variant="subtitle2" color="text.secondary">Email</Typography>
                                 <Typography variant="body1" gutterBottom>{profileData.email}</Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Box>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <Typography variant="subtitle2" color="text.secondary">Phone</Typography>
                                 <Typography variant="body1" gutterBottom>{profileData.phone}</Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Box>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <Typography variant="subtitle2" color="text.secondary">Address</Typography>
                                 <Typography variant="body1">{profileData.address}</Typography>
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </Box>
                     ) : (
                         // Edit Mode
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 3
+                        }}>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <TextField
                                     fullWidth
                                     label="Full Name"
                                     value={tempData.name}
                                     onChange={(e) => setTempData({ ...tempData, name: e.target.value })}
                                 />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Box>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <TextField
                                     fullWidth
                                     label="Email"
@@ -347,16 +393,16 @@ const ProfilePage = ({ profileData, editMode, setEditMode, setProfileData }) => 
                                     value={tempData.email}
                                     onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
                                 />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Box>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <TextField
                                     fullWidth
                                     label="Phone"
                                     value={tempData.phone}
                                     onChange={(e) => setTempData({ ...tempData, phone: e.target.value })}
                                 />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Box>
+                            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                                 <TextField
                                     fullWidth
                                     label="Address"
@@ -365,16 +411,16 @@ const ProfilePage = ({ profileData, editMode, setEditMode, setProfileData }) => 
                                     value={tempData.address}
                                     onChange={(e) => setTempData({ ...tempData, address: e.target.value })}
                                 />
-                            </Grid>
-                            <Grid item xs={12} sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                            </Box>
+                            <Box sx={{ flex: '1 1 100%', display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                                 <Button variant="outlined" onClick={handleCancel}>
                                     Cancel
                                 </Button>
                                 <Button variant="contained" onClick={handleSave}>
                                     Update Profile
                                 </Button>
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </Box>
                     )}
                 </CardContent>
             </Card>
@@ -434,8 +480,16 @@ const OrdersPage = () => {
             {orders.map((order) => (
                 <Card key={order.id} sx={{ mb: 3 }}>
                     <CardContent>
-                        <Grid container spacing={2} alignItems="center">
-                            <Grid item xs={12} md={6}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            gap: 2
+                        }}>
+                            <Box sx={{
+                                flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' },
+                                minWidth: { xs: '100%', md: '200px' }
+                            }}>
                                 <Typography variant="h6" gutterBottom>
                                     {order.movie}
                                 </Typography>
@@ -445,21 +499,28 @@ const OrdersPage = () => {
                                 <Typography variant="body2" sx={{ mt: 1 }}>
                                     Seats: {order.seats.join(', ')}
                                 </Typography>
-                            </Grid>
-                            <Grid item xs={6} md={3}>
+                            </Box>
+                            <Box sx={{
+                                flex: { xs: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 8px)' },
+                                minWidth: { xs: '100px', md: '120px' }
+                            }}>
                                 <Typography variant="h6" color="primary">
                                     ₹{order.total}
                                 </Typography>
-                            </Grid>
-                            <Grid item xs={6} md={3} sx={{ textAlign: 'right' }}>
+                            </Box>
+                            <Box sx={{
+                                flex: { xs: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 8px)' },
+                                textAlign: { xs: 'right', md: 'right' },
+                                minWidth: { xs: '100px', md: '120px' }
+                            }}>
                                 <Chip
                                     icon={<SuccessIcon />}
                                     label="Payment Successful"
                                     color="success"
                                     variant="outlined"
                                 />
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </Box>
                     </CardContent>
                 </Card>
             ))}
@@ -484,9 +545,16 @@ const HelpCenterPage = () => {
                 Help Center
             </Typography>
 
-            <Grid container spacing={3}>
+            <Box sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 3
+            }}>
                 {/* Recent Bookings */}
-                <Grid item xs={12} md={6}>
+                <Box sx={{
+                    flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' },
+                    minWidth: { xs: '100%', md: '300px' }
+                }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
@@ -508,10 +576,13 @@ const HelpCenterPage = () => {
                             </List>
                         </CardContent>
                     </Card>
-                </Grid>
+                </Box>
 
                 {/* Find Your Ticket */}
-                <Grid item xs={12} md={6}>
+                <Box sx={{
+                    flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' },
+                    minWidth: { xs: '100%', md: '300px' }
+                }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
@@ -529,18 +600,25 @@ const HelpCenterPage = () => {
                             </Button>
                         </CardContent>
                     </Card>
-                </Grid>
+                </Box>
 
                 {/* Help Topics */}
-                <Grid item xs={12}>
+                <Box sx={{ flex: '1 1 100%' }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
                                 Top Help Topics
                             </Typography>
-                            <Grid container spacing={2}>
+                            <Box sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 2
+                            }}>
                                 {helpTopics.map((topic, index) => (
-                                    <Grid item xs={12} sm={6} md={3} key={index}>
+                                    <Box sx={{
+                                        flex: { xs: '1 1 calc(50% - 8px)', sm: '1 1 calc(33.33% - 12px)', md: '1 1 calc(25% - 12px)' },
+                                        minWidth: { xs: '120px', sm: '150px' }
+                                    }} key={index}>
                                         <Paper
                                             sx={{
                                                 p: 2,
@@ -552,15 +630,15 @@ const HelpCenterPage = () => {
                                             <Typography variant="h4">{topic.icon}</Typography>
                                             <Typography variant="body2">{topic.title}</Typography>
                                         </Paper>
-                                    </Grid>
+                                    </Box>
                                 ))}
-                            </Grid>
+                            </Box>
                         </CardContent>
                     </Card>
-                </Grid>
+                </Box>
 
                 {/* Chat with Admin */}
-                <Grid item xs={12}>
+                <Box sx={{ flex: '1 1 100%' }}>
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
@@ -578,8 +656,8 @@ const HelpCenterPage = () => {
                             </Button>
                         </CardContent>
                     </Card>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
 
             {/* Chat Dialog */}
             <Dialog

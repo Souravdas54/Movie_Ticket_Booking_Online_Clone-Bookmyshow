@@ -171,7 +171,7 @@ export default function SeatBookingPage() {
   //     const response = await confirmBooking(confirmPayload);
 
   //     if (response.success) {
-        
+
   //       console.log('✅ Booking confirmed successfully!', response.data);
   //       router.push(
   //         `/payment?bookingId=${response.data._id}&seats=${bookingData.seats.join(
@@ -195,148 +195,154 @@ export default function SeatBookingPage() {
   // };
 
   // Fixed handleSeatsConfirmed function
-const handleSeatsConfirmed = async (bookingData: {
-  seats: string[];
-  sessionId: string;
-  showId: string;
-}) => {
-  if (!show) return;
+  const handleSeatsConfirmed = async (bookingData: {
+    seats: string[];
+    sessionId: string;
+    showId: string;
+  }) => {
+    if (!show) return;
 
-  setBookingLoading(true);
-  try {
-    console.log('🎯 Parent component - confirming booking:', bookingData);
+    setBookingLoading(true);
+    try {
+      console.log('🎯 Parent component - confirming booking:', bookingData);
 
-    // Calculate total amount using the function
-    const totalAmount = calculateTotalAmount(bookingData.seats);
+      // Calculate total amount using the function
+      const totalAmount = calculateTotalAmount(bookingData.seats);
 
-    console.log('💰 Calculated total amount:', totalAmount, 'for seats:', bookingData.seats);
+      console.log('💰 Calculated total amount:', totalAmount, 'for seats:', bookingData.seats);
 
-    // Get user ID from session storage
-    let userId = "current-user-id";
-    if (typeof window !== 'undefined') {
-      const userData = sessionStorage.getItem("userData");
-      if (userData) {
-        try {
-          const user = JSON.parse(userData);
-          userId = user._id || user.id || userId;
-        } catch (error) {
-          console.error('Error parsing user data:', error);
+      // Get user ID from session storage
+      let userId = "current-user-id";
+      if (typeof window !== 'undefined') {
+        const userData = sessionStorage.getItem("userData");
+        if (userData) {
+          try {
+            const user = JSON.parse(userData);
+            userId = user._id || user.id || userId;
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+          }
         }
       }
-    }
 
-    // Create payload
-    const confirmPayload: ConfirmBookingRequest = {
-      showId: bookingData.showId,
-      seats: bookingData.seats,
-      sessionId: bookingData.sessionId,
-      totalAmount: totalAmount,
-      userId: userId // Use actual user ID
-    };
+      // Create payload
+      const confirmPayload: ConfirmBookingRequest = {
+        showId: bookingData.showId,
+        seats: bookingData.seats,
+        sessionId: bookingData.sessionId,
+        totalAmount: totalAmount,
+        userId: userId // Use actual user ID
+      };
 
-    console.log('📦 FINAL booking payload:', confirmPayload);
+      console.log('📦 FINAL booking payload:', confirmPayload);
 
-    const response = await confirmBooking(confirmPayload);
+      const response = await confirmBooking(confirmPayload);
 
-    // DEBUG: Log the full response to understand structure
-    console.log('🔍 FULL BOOKING RESPONSE:', {
-      success: response.success,
-      message: response.message,
-      data: response.data,
-      dataType: typeof response.data,
-      dataKeys: response.data ? Object.keys(response.data) : 'No data',
-      fullResponse: JSON.stringify(response, null, 2)
-    });
+      // DEBUG: Log the full response to understand structure
+      console.log('🔍 FULL BOOKING RESPONSE:', {
+        success: response.success,
+        message: response.message,
+        data: response.data,
+        dataType: typeof response.data,
+        dataKeys: response.data ? Object.keys(response.data) : 'No data',
+        fullResponse: JSON.stringify(response, null, 2)
+      });
 
-    if (response.success) {
-      // CRITICAL FIX: Based on your backend response structure
-      // The booking ID could be in multiple places. Let's try all possibilities.
-      let bookingId = '';
-      
-      // Check different possible locations
-      if (response.data && typeof response.data === 'object') {
-        // 1. Check if data itself has _id (if data is the booking)
-        if (response.data._id && typeof response.data._id === 'string') {
-          bookingId = response.data._id;
-        }
-        // 2. Check if data has booking object with _id
-        else if (response.data.booking && response.data.booking._id) {
-          bookingId = response.data.booking._id;
-        }
-        // 3. Check if data has bookingId field
-        else if (response.data.bookingId) {
-          bookingId = response.data.bookingId;
-        }
-        // 4. Try to find any ID field in the response data
-        else {
-          // Deep search for ID fields
-          const findIdInObject = (obj: any): string => {
-            if (!obj || typeof obj !== 'object') return '';
-            
-            // Check common ID field names
-            const idFields = ['_id', 'id', 'bookingId', 'booking_id'];
-            for (const field of idFields) {
-              if (obj[field] && typeof obj[field] === 'string') {
-                return obj[field];
-              }
+      if (response.success) {
+        // CRITICAL FIX: Based on your backend response structure
+        // The booking ID could be in multiple places. Let's try all possibilities.
+        let bookingId = '';
+
+        const data = response.data as unknown as Record<string, unknown>;
+
+        // Check different possible locations
+        if (data && typeof data === 'object') {
+          // 1. Check if data itself has _id (if data is the booking)
+          if (typeof data._id === 'string') {
+            bookingId = data._id;
+          }
+          // 2. Check if data has booking object with _id
+          else if (data.booking && typeof data.booking === 'object') {
+            const booking = data.booking as Record<string, unknown>;
+            if (typeof booking._id === 'string') {
+              bookingId = booking._id;  // ✅ no more "Property '_id' does not exist" error
             }
-            
-            // Recursively search nested objects
-            for (const key in obj) {
-              if (typeof obj[key] === 'object') {
-                const found = findIdInObject(obj[key]);
-                if (found) return found;
+          }
+          // 3. Check if data has bookingId field
+          else if (typeof data.bookingId === 'string') {
+            bookingId = data.bookingId;
+          }
+          // 4. Try to find any ID field in the response data
+          else {
+            // Deep search for ID fields
+            const findIdInObject = (obj: Record<string, unknown>): string => {
+              if (!obj || typeof obj !== 'object') return '';
+
+              // Check common ID field names
+              const idFields = ['_id', 'id', 'bookingId', 'booking_id'];
+              for (const field of idFields) {
+                if (obj[field] && typeof obj[field] === 'string') {
+                  return obj[field];
+                }
               }
-            }
-            
-            return '';
-          };
-          
-          bookingId = findIdInObject(response.data);
+
+              // Recursively search nested objects
+              for (const key in obj) {
+                const val = obj[key];
+                if (val && typeof val === 'object') {
+                  const found = findIdInObject(val as Record<string, unknown>);
+                  if (found) return found;
+                }
+              }
+
+              return '';
+            };
+
+            bookingId = findIdInObject(data);
+          }
         }
-      }
-      
-      // 5. Check root level
-      if (!bookingId && response.bookingId) {
-        bookingId = response.bookingId;
-      }
 
-      console.log('✅ Extracted bookingId:', bookingId);
-      
-      // Validate bookingId format
-      if (!bookingId) {
-        console.error('❌ No booking ID found. Response structure:', response);
-        throw new Error('Booking ID not found. Please contact support.');
-      }
-      
-      // Validate it's a valid MongoDB ObjectId (24 hex chars)
-      const objectIdRegex = /^[0-9a-fA-F]{24}$/;
-      if (!objectIdRegex.test(bookingId)) {
-        console.error('❌ Invalid booking ID format:', bookingId);
-        throw new Error('Invalid booking ID format. Please try again.');
-      }
+        // 5. Check root level
+        if (!bookingId && response.bookingId) {
+          bookingId = response.bookingId;
+        }
 
-      console.log('✅ Booking confirmed successfully! Booking ID:', bookingId);
+        console.log('✅ Extracted bookingId:', bookingId);
 
-      // Redirect to payment page with the CORRECT bookingId
-      router.push(
-        `/payment?bookingId=${bookingId}&seats=${bookingData.seats.join(",")}&total=${totalAmount}`
-      );
-    } else {
-      setError(response.message || "Failed to confirm booking");
+        // Validate bookingId format
+        if (!bookingId) {
+          console.error('❌ No booking ID found. Response structure:', response);
+          throw new Error('Booking ID not found. Please contact support.');
+        }
+
+        // Validate it's a valid MongoDB ObjectId (24 hex chars)
+        const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+        if (!objectIdRegex.test(bookingId)) {
+          console.error('❌ Invalid booking ID format:', bookingId);
+          throw new Error('Invalid booking ID format. Please try again.');
+        }
+
+        console.log('✅ Booking confirmed successfully! Booking ID:', bookingId);
+
+        // Redirect to payment page with the CORRECT bookingId
+        router.push(
+          `/payment?bookingId=${bookingId}&seats=${bookingData.seats.join(",")}&total=${totalAmount}`
+        );
+      } else {
+        setError(response.message || "Failed to confirm booking");
+      }
+    } catch (err: unknown) {
+      console.error("Error confirming booking:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to confirm booking");
+      }
+    } finally {
+      setBookingLoading(false);
+      setDialogOpen(false);
     }
-  } catch (err: unknown) {
-    console.error("Error confirming booking:", err);
-    if (err instanceof Error) {
-      setError(err.message);
-    } else {
-      setError("Failed to confirm booking");
-    }
-  } finally {
-    setBookingLoading(false);
-    setDialogOpen(false);
-  }
-};
+  };
 
   if (loading) {
     return (
