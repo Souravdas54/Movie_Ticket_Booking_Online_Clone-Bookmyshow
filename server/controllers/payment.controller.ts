@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { paymentRepository } from "../repository/payment.repositories";
 import { bookingRepository } from "../repository/booking.repo";
-import { CreatePaymentIntent, ConfirmPayment } from "../interfaces/payment.interface";
+import { CreatePaymentIntent, ConfirmPayment, PaymentWebhook } from "../interfaces/payment.interface";
 import Stripe from "stripe";
 import bookingEmailService from "../services/booking.mail.service";
 import { showModel } from "../models/show.model";
@@ -86,7 +86,7 @@ class PaymentController {
       );
       console.log("Webhook received:", event.type);
 
-      await paymentRepository.handlePaymentWebhook(event);
+      await paymentRepository.handlePaymentWebhook(event as unknown as PaymentWebhook);
 
       return res.status(200).json({ success: true, received: true });
 

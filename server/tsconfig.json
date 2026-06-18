@@ -11,8 +11,9 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": [
-      "ESNext"
+      "ESNext","DOM"
     ],
+    "skipLibCheck": true 
     // "typeRoots": [
     //   "./types",
     //   "./node_modules/@types",

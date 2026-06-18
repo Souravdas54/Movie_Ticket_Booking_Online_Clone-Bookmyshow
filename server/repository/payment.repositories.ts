@@ -1,10 +1,10 @@
 import mongoose, { Types, ClientSession } from "mongoose";
-import { PaymentInterface, CreatePaymentIntent } from "../interfaces/payment.interface";
+import { PaymentInterface, CreatePaymentIntent, PaymentWebhook } from "../interfaces/payment.interface";
 import { paymentModel } from "../models/payment.model";
 import { bookingModel } from "../models/booking.model";
 import { showModel } from "../models/show.model";
-import Stripe from "stripe";
 import bookingEmailService from "../services/booking.mail.service";
+import Stripe from "stripe";
 
 // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 //   apiVersion: "2025-11-17.clover",
@@ -203,18 +203,18 @@ class PaymentRepository {
     }
   }
 
-  async handlePaymentWebhook(event: Stripe.Event): Promise<void> {
+  async handlePaymentWebhook(event:PaymentWebhook): Promise<void> {
     const session = await mongoose.startSession();
     try {
       session.startTransaction();
 
       if (event.type === "payment_intent.succeeded") {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        const { bookingId } = paymentIntent.metadata;
+        const paymentIntentId = event.data.object.id;
+        const bookingId  = event.data.object.metadata.bookingId;
 
         // Update payment status
         await paymentModel.findOneAndUpdate(
-          { stripePaymentIntentId: paymentIntent.id },
+          { stripePaymentIntentId: paymentIntentId},
           {
             status: "succeeded",
             paymentDate: new Date(),
@@ -247,17 +247,17 @@ class PaymentRepository {
           }
         }
       } else if (event.type === "payment_intent.payment_failed") {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntentId  = event.data.object.id;
 
         await paymentModel.findOneAndUpdate(
-          { stripePaymentIntentId: paymentIntent.id },
+          { stripePaymentIntentId: paymentIntentId},
           { status: "failed" },
           { session }
         );
 
         // Optionally: Release locked seats after payment failure
         const payment = await paymentModel.findOne({
-          stripePaymentIntentId: paymentIntent.id
+          stripePaymentIntentId: paymentIntentId
         }).session(session);
 
         if (payment) {
